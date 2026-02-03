@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>¿Hillary quieres pasar el resto de tu vida conmigo?</title>
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    :root {
+      --background: hsl(350, 100%, 98%);
+      --foreground: hsl(350, 30%, 25%);
+      --primary: hsl(350, 80%, 60%);
+      --primary-foreground: hsl(0, 0%, 100%);
+      --muted-foreground: hsl(350, 20%, 50%);
+      --heart-primary: hsl(350, 85%, 60%);
+      --heart-secondary: hsl(340, 70%, 70%);
+      --heart-tertiary: hsl(20, 90%, 70%);
+      --border-color: hsl(350, 40%, 80%);
+    }
+    html, body {
+      height: 100%;
+      overflow: hidden;
+    }
+    body {
+      font-family: 'Georgia', 'Times New Roman', serif;
+      background-color: var(--background);
+      color: var(--foreground);
+      min-height: 100%;
+      position: relative;
+    }
+    /* Floating Hearts Container */
+    .hearts-container {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      overflow: hidden;
+      z-index: 0;
+    }
+    .floating-heart {
+      position: absolute;
+      animation: float-heart var(--duration) ease-in-out infinite;
+      animation-delay: var(--delay);
+      opacity: var(--opacity);
+    }
+    @keyframes float-heart {
+      0%, 100% {
+        transform: translateY(0) rotate(0deg) scale(1);
+        opacity: var(--opacity);
+      }
+      25% {
+        transform: translateY(-20px) rotate(5deg) scale(1.05);
+        opacity: calc(var(--opacity) + 0.2);
+      }
+      50% {
+        transform: translateY(-10px) rotate(-3deg) scale(1);
+        opacity: calc(var(--opacity) + 0.1);
+      }
+      75% {
+        transform: translateY(-25px) rotate(3deg) scale(1.02);
+        opacity: calc(var(--opacity) + 0.05);
+      }
+    }
+    @keyframes pulse-heart {
+      0%, 100% {
+        transform: scale(1);
+      }
+      50% {
+        transform: scale(1.15);
+      }
+    }
+    @keyframes fade-in-up {
+      0% {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    @keyframes confetti-fall {
+      0% {
+        transform: translateY(-100%) rotate(0deg);
+        opacity: 1;
+      }
+      100% {
+        transform: translateY(100vh) rotate(720deg);
+        opacity: 0;
+      }
+    }
+    @keyframes sparkle {
+      0%, 100% {
+        opacity: 0;
+        transform: scale(0);
+      }
+      50% {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+    /* Screens */
+    .screen {
+      display: none;
+      position: relative;
+      min-height: 100vh;
+      min-height: 100dvh;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+      z-index: 10;
+    }
+    .screen.active {
+      display: flex;
+    }
+    /* Proposal Screen */
+    .pulse-heart {
+      animation: pulse-heart 1.5s ease-in-out infinite;
+    }
+    .question {
+      font-size: clamp(1.5rem, 5vw, 2.5rem);
+      font-weight: bold;
+      text-align: center;
+      margin-bottom: 2.5rem;
+      padding: 0 1rem;
+      line-height: 1.5;
+    }
+    .buttons-container {
+      display: flex;
+      gap: 1.5rem;
+      align-items: center;
+    }
+    .btn {
+      padding: 1rem 2rem;
+      font-size: 1.25rem;
+      font-weight: 600;
+      border-radius: 9999px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-family: inherit;
+      border: none;
+      outline: none;
+    }
+    .btn-yes {
+      background-color: var(--primary);
+      color: var(--primary-foreground);
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+    }
+    .btn-yes:hover {
+      background-color: hsl(350, 80%, 55%);
+      transform: scale(1.05);
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+    }
+    .btn-no {
+      background-color: transparent;
+      color: var(--muted-foreground);
+      border: 2px solid var(--border-color);
+    }
+    .btn-no:hover {
+      border-color: var(--muted-foreground);
+    }
+    .btn-no.escaping {
+      position: fixed;
+      z-index: 50;
+      transition: left 0.15s ease-out, top 0.15s ease-out;
+    }
+    /* Success Screen */
+    .success-content {
+      text-align: center;
+      animation: fade-in-up 0.8s ease-out forwards;
+    }
+    .success-heart {
+      margin-bottom: 2rem;
+    }
+    .success-title {
+      font-size: clamp(2rem, 8vw, 3rem);
+      font-weight: bold;
+      margin-bottom: 1rem;
+    }
+    .success-subtitle {
+      font-size: clamp(1.25rem, 4vw, 1.5rem);
+      color: var(--muted-foreground);
+      margin-bottom: 1.5rem;
+    }
+    .success-tagline {
+      font-size: 1.125rem;
+      color: var(--muted-foreground);
+      font-style: italic;
+    }
+    .sparkle {
+      position: absolute;
+      animation: sparkle 2s ease-in-out infinite;
+    }
+    .falling-heart {
+      position: absolute;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+  <!-- Floating Hearts Background -->
+  <div class="hearts-container" id="heartsContainer"></div>
+  <!-- Proposal Screen -->
+  <div class="screen active" id="proposalScreen">
+    <svg class="pulse-heart" width="60" height="60" viewBox="0 0 24 24" fill="var(--heart-primary)" style="margin-bottom: 1.5rem;">
+      <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+    </svg>
+    
+    <h1 class="question">¿Hillary quieres pasar el resto de tu vida conmigo?</h1>
+    
+    <div class="buttons-container">
+      <button class="btn btn-yes" id="btnYes">Sí</button>
+      <button class="btn btn-no" id="btnNo">No</button>
+    </div>
+  </div>
+  <!-- Success Screen -->
+  <div class="screen" id="successScreen">
+    <div id="sparklesContainer"></div>
+    <div id="fallingHeartsContainer"></div>
+    
+    <div class="success-content">
+      <div class="success-heart">
+        <svg class="pulse-heart" width="120" height="120" viewBox="0 0 24 24" fill="var(--heart-primary)">
+          <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+        </svg>
+      </div>
+      
+      <h1 class="success-title">¡Deseo cumplido!</h1>
+      <p class="success-subtitle">Te amo con todo mi corazón ❤️</p>
+      <p class="success-tagline">Juntos por siempre</p>
+    </div>
+  </div>
+  <script>
+    (function() {
+      'use strict';
+      // Elements
+      const proposalScreen = document.getElementById('proposalScreen');
+      const successScreen = document.getElementById('successScreen');
+      const btnYes = document.getElementById('btnYes');
+      const btnNo = document.getElementById('btnNo');
+      const heartsContainer = document.getElementById('heartsContainer');
+      let isNoButtonEscaping = false;
+      // Create floating hearts background
+      function createFloatingHearts() {
+        for (let i = 0; i < 20; i++) {
+          const heart = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+          const size = Math.random() * 24 + 12;
+          const duration = Math.random() * 4 + 4;
+          const delay = Math.random() * 5;
+          const opacity = Math.random() * 0.4 + 0.2;
+          heart.setAttribute('width', size);
+          heart.setAttribute('height', size);
+          heart.setAttribute('viewBox', '0 0 24 24');
+          heart.setAttribute('fill', 'var(--heart-primary)');
+          heart.classList.add('floating-heart');
+          heart.style.left = Math.random() * 100 + '%';
+          heart.style.top = Math.random() * 100 + '%';
+          heart.style.setProperty('--duration', duration + 's');
+          heart.style.setProperty('--delay', delay + 's');
+          heart.style.setProperty('--opacity', opacity);
+          heart.innerHTML = '<path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>';
+          heartsContainer.appendChild(heart);
+        }
+      }
+      // Get actual visible viewport dimensions
+      function getViewport() {
+        // Use visualViewport if available (better mobile support)
+        if (window.visualViewport) {
+          return {
+            width: window.visualViewport.width,
+            height: window.visualViewport.height
+          };
+        }
+        return {
+          width: window.innerWidth,
+          height: window.innerHeight
+        };
+      }
+      // Get safe bounds for button positioning
+      function getSafeBounds() {
+        const viewport = getViewport();
+        const rect = btnNo.getBoundingClientRect();
+        const buttonWidth = rect.width || 80;
+        const buttonHeight = rect.height || 50;
+        const padding = 20;
+        return {
+          minX: padding,
+          maxX: viewport.width - buttonWidth - padding,
+          minY: padding,
+          maxY: viewport.height - buttonHeight - padding
+        };
+      }
+      // Clamp position within bounds
+      function clampPosition(x, y) {
+        const bounds = getSafeBounds();
+        return {
+          x: Math.max(bounds.minX, Math.min(bounds.maxX, x)),
+          y: Math.max(bounds.minY, Math.min(bounds.maxY, y))
+        };
+      }
+      // Move No button to escape
+      function moveNoButton(interactionX, interactionY) {
+        const viewport = getViewport();
+        const bounds = getSafeBounds();
+        if (!isNoButtonEscaping) {
+          isNoButtonEscaping = true;
+          btnNo.classList.add('escaping');
+        }
+        // Calculate new position away from interaction point
+        let newX, newY;
+        const centerX = viewport.width / 2;
+        const centerY = viewport.height / 2;
+        if (interactionX !== undefined && interactionY !== undefined) {
+          // Move to opposite side
+          if (interactionX < centerX) {
+            newX = bounds.minX + (bounds.maxX - bounds.minX) * 0.6 + Math.random() * (bounds.maxX - bounds.minX) * 0.35;
+          } else {
+            newX = bounds.minX + Math.random() * (bounds.maxX - bounds.minX) * 0.35;
+          }
+          if (interactionY < centerY) {
+            newY = bounds.minY + (bounds.maxY - bounds.minY) * 0.6 + Math.random() * (bounds.maxY - bounds.minY) * 0.35;
+          } else {
+            newY = bounds.minY + Math.random() * (bounds.maxY - bounds.minY) * 0.35;
+          }
+        } else {
+          newX = bounds.minX + Math.random() * (bounds.maxX - bounds.minX);
+          newY = bounds.minY + Math.random() * (bounds.maxY - bounds.minY);
+        }
+        // Clamp to ensure safety
+        const clamped = clampPosition(newX, newY);
+        btnNo.style.left = clamped.x + 'px';
+        btnNo.style.top = clamped.y + 'px';
+      }
+      // Handle No button interaction
+      function handleNoInteraction(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        let x, y;
+        if (e.type.startsWith('touch')) {
+          const touch = e.touches[0] || e.changedTouches[0];
+          x = touch ? touch.clientX : undefined;
+          y = touch ? touch.clientY : undefined;
+        } else {
+          x = e.clientX;
+          y = e.clientY;
+        }
+        moveNoButton(x, y);
+      }
+      // Handle Yes button click
+      function handleYesClick() {
+        proposalScreen.classList.remove('active');
+        successScreen.classList.add('active');
+        createSuccessEffects();
+      }
+      // Create success screen effects
+      function createSuccessEffects() {
+        const sparklesContainer = document.getElementById('sparklesContainer');
+        const fallingHeartsContainer = document.getElementById('fallingHeartsContainer');
+        // Sparkles
+        for (let i = 0; i < 12; i++) {
+          const sparkle = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+          sparkle.setAttribute('width', '20');
+          sparkle.setAttribute('height', '20');
+          sparkle.setAttribute('viewBox', '0 0 24 24');
+          sparkle.setAttribute('fill', 'var(--heart-tertiary)');
+          sparkle.classList.add('sparkle');
+          sparkle.style.left = Math.random() * 100 + '%';
+          sparkle.style.top = Math.random() * 100 + '%';
+          sparkle.style.animationDelay = (Math.random() * 2) + 's';
+          sparkle.innerHTML = '<polygon points="12,2 15,9 22,9 17,14 19,22 12,17 5,22 7,14 2,9 9,9"/>';
+          sparklesContainer.appendChild(sparkle);
+        }
+        // Falling hearts
+        for (let i = 0; i < 8; i++) {
+          const heart = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+          const size = 16 + Math.random() * 16;
+          heart.setAttribute('width', size);
+          heart.setAttribute('height', size);
+          heart.setAttribute('viewBox', '0 0 24 24');
+          heart.setAttribute('fill', i % 2 === 0 ? 'var(--heart-primary)' : 'var(--heart-secondary)');
+          heart.classList.add('falling-heart');
+          heart.style.left = (10 + i * 12) + '%';
+          heart.style.animation = 'confetti-fall ' + (3 + Math.random() * 2) + 's linear infinite';
+          heart.style.animationDelay = (Math.random() * 3) + 's';
+          heart.innerHTML = '<path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>';
+          fallingHeartsContainer.appendChild(heart);
+        }
+      }
+      // Handle viewport changes - re-clamp button position
+      function handleViewportChange() {
+        if (isNoButtonEscaping) {
+          const currentLeft = parseFloat(btnNo.style.left) || 0;
+          const currentTop = parseFloat(btnNo.style.top) || 0;
+          const clamped = clampPosition(currentLeft, currentTop);
+          btnNo.style.left = clamped.x + 'px';
+          btnNo.style.top = clamped.y + 'px';
+        }
+      }
+      // Initialize
+      function init() {
+        createFloatingHearts();
+        // Yes button
+        btnYes.addEventListener('click', handleYesClick);
+        // No button - multiple event types for reliability
+        btnNo.addEventListener('mouseenter', handleNoInteraction);
+        btnNo.addEventListener('mouseover', handleNoInteraction);
+        btnNo.addEventListener('touchstart', handleNoInteraction, { passive: false });
+        btnNo.addEventListener('click', handleNoInteraction);
+        btnNo.addEventListener('pointerenter', handleNoInteraction);
+        // Viewport change handlers
+        window.addEventListener('resize', handleViewportChange);
+        window.addEventListener('orientationchange', handleViewportChange);
+        // Visual viewport API for mobile
+        if (window.visualViewport) {
+          window.visualViewport.addEventListener('resize', handleViewportChange);
+          window.visualViewport.addEventListener('scroll', handleViewportChange);
+        }
+        // Periodic check to ensure button stays visible
+        setInterval(handleViewportChange, 1000);
+      }
+      // Start when DOM is ready
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+      } else {
+        init();
+      }
+    })();
+  </script>
+</body>
+</html>
